@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Playground</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" integrity="sha512-ozq8xQKq6urvuU6jNgkfqAmT7jKN2XumbrX1JiB3TnF7tI48DPI4Gy1GXKD/V3EExgAs1V+pRO7vwtS1LHg0Gw==" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css" integrity="sha512-vJfMKRRm4c4UupyPwGUZI8U651mSzbmmPgR3sdE3LcwBPsdGeARvUM5EcSTg34DK8YIRiIo+oJwNfZPMKEQyug==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+        var latLangs;
+        var map = L.map('map', {
+            drawControl: false,
+            editable: true,
+        }).setView([0, 0], 1).setView(['38.070633461280536', '46.310264468193054'], 19);
+        L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=wKpkjOUe9azQ4dqIgIj9', {
+            attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+        }).addTo(map);
+
+
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+        var drawControl = new L.Control.Draw({
+            draw: {
+                marker: false,
+                circlemarker: false,
+                circle: false
+            },
+            edit: {
+                featureGroup: drawnItems
+            }
+        });
+        map.addControl(drawControl);
+
+        // we are listening to the create event
+        map.on('draw:created', function(event) {
+
+            // this variables save the layers (polygon, circle) information created on the map
+            var type = event.layerType,
+                layer = event.layer;
+
+            // adds the layer (shape that have created) to the map as a layer
+            drawnItems.addLayer(event.layer);
+
+            // logs the coords of the shape that we have created
+            latLangs = layer.getLatLngs();
+            console.log('this is from create listener', latLangs);
+
+            // Do whatever else you need to. (save to db; add to map etc)
+            map.addLayer(layer);
+        });
+
+        // listening to the edit event
+        map.on('draw:edited', function(event) {
+            // this variable stores all the layers on the map
+            var layers = event.layers._layers;
+
+            // we are looping through all the layers (polygon, circle, ...)
+            Object.keys(layers).forEach(function(layerOne) {
+
+                // logging the new coords that we get from the editing process
+                latLangs = layers[layerOne].getLatLngs();
+                console.log('this is latLangs from edit listener', latLangs);
+            })
+        })
+
+        map.on('draw:deleted', function(event) {
+            var layer = event.layers._layers;
+            latLangs = '';
+        })
+    </script>
+</body>
+
+</html>
