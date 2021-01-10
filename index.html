@@ -26,7 +26,10 @@
 <body>
     <div id="map"></div>
     <script>
+        // storing the lat & lng of a drawed shape over here
         var latLangs;
+
+        // making instance of map for rendering
         var map = L.map('map', {
             drawControl: false,
             editable: true,
